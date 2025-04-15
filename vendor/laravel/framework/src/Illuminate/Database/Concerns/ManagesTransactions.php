@@ -10,18 +10,15 @@ use Throwable;
 trait ManagesTransactions
 {
     /**
-     * @template TReturn of mixed
-     *
      * Execute a Closure within a transaction.
      *
-     * @param  (\Closure(static): TReturn)  $callback
+     * @param  \Closure  $callback
      * @param  int  $attempts
-     * @param  Closure|null  $onFailure
-     * @return TReturn
+     * @return mixed
      *
      * @throws \Throwable
      */
-    public function transaction(Closure $callback, $attempts = 1, ?Closure $onFailure = null)
+    public function transaction(Closure $callback, $attempts = 1)
     {
         for ($currentAttempt = 1; $currentAttempt <= $attempts; $currentAttempt++) {
             $this->beginTransaction();
@@ -38,7 +35,7 @@ trait ManagesTransactions
             // exception back out, and let the developer handle an uncaught exception.
             catch (Throwable $e) {
                 $this->handleTransactionException(
-                    $e, $currentAttempt, $attempts, $onFailure
+                    $e, $currentAttempt, $attempts
                 );
 
                 continue;
@@ -79,12 +76,11 @@ trait ManagesTransactions
      * @param  \Throwable  $e
      * @param  int  $currentAttempt
      * @param  int  $maxAttempts
-     * @param  Closure|null  $onFailure
      * @return void
      *
      * @throws \Throwable
      */
-    protected function handleTransactionException(Throwable $e, $currentAttempt, $maxAttempts, ?Closure $onFailure)
+    protected function handleTransactionException(Throwable $e, $currentAttempt, $maxAttempts)
     {
         // On a deadlock, MySQL rolls back the entire transaction so we can't just
         // retry the query. We have to throw this exception all the way out and
@@ -108,10 +104,6 @@ trait ManagesTransactions
         if ($this->causedByConcurrencyError($e) &&
             $currentAttempt < $maxAttempts) {
             return;
-        }
-
-        if ($onFailure !== null) {
-            $onFailure($e);
         }
 
         throw $e;
@@ -261,8 +253,8 @@ trait ManagesTransactions
         // that this given transaction level is valid before attempting to rollback to
         // that level. If it's not we will just return out and not attempt anything.
         $toLevel = is_null($toLevel)
-            ? $this->transactions - 1
-            : $toLevel;
+                    ? $this->transactions - 1
+                    : $toLevel;
 
         if ($toLevel < 0 || $toLevel >= $this->transactions) {
             return;

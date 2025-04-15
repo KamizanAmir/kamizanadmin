@@ -4,6 +4,7 @@ namespace Illuminate\Database;
 
 use Closure;
 use Exception;
+use Illuminate\Database\PDO\SqlServerDriver;
 use Illuminate\Database\Query\Grammars\SqlServerGrammar as QueryGrammar;
 use Illuminate\Database\Query\Processors\SqlServerProcessor;
 use Illuminate\Database\Schema\Grammars\SqlServerGrammar as SchemaGrammar;
@@ -15,28 +16,19 @@ use Throwable;
 class SqlServerConnection extends Connection
 {
     /**
-     * {@inheritdoc}
-     */
-    public function getDriverTitle()
-    {
-        return 'SQL Server';
-    }
-
-    /**
      * Execute a Closure within a transaction.
      *
      * @param  \Closure  $callback
      * @param  int  $attempts
-     * @param  Closure|null  $onFailure
      * @return mixed
      *
      * @throws \Throwable
      */
-    public function transaction(Closure $callback, $attempts = 1, ?Closure $onFailure = null)
+    public function transaction(Closure $callback, $attempts = 1)
     {
         for ($a = 1; $a <= $attempts; $a++) {
             if ($this->getDriverName() === 'sqlsrv') {
-                return parent::transaction($callback, $attempts, $onFailure);
+                return parent::transaction($callback, $attempts);
             }
 
             $this->getPdo()->exec('BEGIN TRAN');
@@ -55,10 +47,6 @@ class SqlServerConnection extends Connection
             // be handled how the developer sees fit for their applications.
             catch (Throwable $e) {
                 $this->getPdo()->exec('ROLLBACK TRAN');
-
-                if ($a === $attempts && $onFailure !== null) {
-                    $onFailure($e);
-                }
 
                 throw $e;
             }
@@ -98,7 +86,9 @@ class SqlServerConnection extends Connection
      */
     protected function getDefaultQueryGrammar()
     {
-        return new QueryGrammar($this);
+        ($grammar = new QueryGrammar)->setConnection($this);
+
+        return $this->withTablePrefix($grammar);
     }
 
     /**
@@ -122,7 +112,9 @@ class SqlServerConnection extends Connection
      */
     protected function getDefaultSchemaGrammar()
     {
-        return new SchemaGrammar($this);
+        ($grammar = new SchemaGrammar)->setConnection($this);
+
+        return $this->withTablePrefix($grammar);
     }
 
     /**
@@ -146,5 +138,15 @@ class SqlServerConnection extends Connection
     protected function getDefaultPostProcessor()
     {
         return new SqlServerProcessor;
+    }
+
+    /**
+     * Get the Doctrine DBAL driver.
+     *
+     * @return \Illuminate\Database\PDO\SqlServerDriver
+     */
+    protected function getDoctrineDriver()
+    {
+        return new SqlServerDriver;
     }
 }

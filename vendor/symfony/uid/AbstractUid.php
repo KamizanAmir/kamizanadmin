@@ -14,12 +14,12 @@ namespace Symfony\Component\Uid;
 /**
  * @author Nicolas Grekas <p@tchwork.com>
  */
-abstract class AbstractUid implements \JsonSerializable, \Stringable, HashableInterface
+abstract class AbstractUid implements \JsonSerializable, \Stringable
 {
     /**
      * The identifier in its canonic representation.
      */
-    protected string $uid;
+    protected $uid;
 
     /**
      * Whether the passed value is valid for the constructor of the current class.
@@ -85,36 +85,30 @@ abstract class AbstractUid implements \JsonSerializable, \Stringable, HashableIn
 
     /**
      * Returns the identifier as a raw binary string.
-     *
-     * @return non-empty-string
      */
     abstract public function toBinary(): string;
 
     /**
-     * Returns the identifier as a base58 case-sensitive string.
+     * Returns the identifier as a base58 case sensitive string.
      *
      * @example 2AifFTC3zXgZzK5fPrrprL (len=22)
-     *
-     * @return non-empty-string
      */
     public function toBase58(): string
     {
-        return strtr(\sprintf('%022s', BinaryUtil::toBase($this->toBinary(), BinaryUtil::BASE58)), '0', '1');
+        return strtr(sprintf('%022s', BinaryUtil::toBase($this->toBinary(), BinaryUtil::BASE58)), '0', '1');
     }
 
     /**
-     * Returns the identifier as a base32 case-insensitive string.
+     * Returns the identifier as a base32 case insensitive string.
      *
      * @see https://tools.ietf.org/html/rfc4648#section-6
      *
      * @example 09EJ0S614A9FXVG9C5537Q9ZE1 (len=26)
-     *
-     * @return non-empty-string
      */
     public function toBase32(): string
     {
         $uid = bin2hex($this->toBinary());
-        $uid = \sprintf('%02s%04s%04s%04s%04s%04s%04s',
+        $uid = sprintf('%02s%04s%04s%04s%04s%04s%04s',
             base_convert(substr($uid, 0, 2), 16, 32),
             base_convert(substr($uid, 2, 5), 16, 32),
             base_convert(substr($uid, 7, 5), 16, 32),
@@ -128,13 +122,11 @@ abstract class AbstractUid implements \JsonSerializable, \Stringable, HashableIn
     }
 
     /**
-     * Returns the identifier as a RFC 9562/4122 case-insensitive string.
+     * Returns the identifier as a RFC 9562/4122 case insensitive string.
      *
      * @see https://datatracker.ietf.org/doc/html/rfc9562/#section-4
      *
      * @example 09748193-048a-4bfb-b825-8528cf74fdc1 (len=36)
-     *
-     * @return non-empty-string
      */
     public function toRfc4122(): string
     {
@@ -151,8 +143,6 @@ abstract class AbstractUid implements \JsonSerializable, \Stringable, HashableIn
      * Returns the identifier as a prefixed hexadecimal case insensitive string.
      *
      * @example 0x09748193048a4bfbb8258528cf74fdc1 (len=34)
-     *
-     * @return non-empty-string
      */
     public function toHex(): string
     {
@@ -171,38 +161,16 @@ abstract class AbstractUid implements \JsonSerializable, \Stringable, HashableIn
         return $this->uid === $other->uid;
     }
 
-    /**
-     * @return non-empty-string
-     */
-    public function hash(): string
-    {
-        return $this->uid;
-    }
-
     public function compare(self $other): int
     {
         return (\strlen($this->uid) - \strlen($other->uid)) ?: ($this->uid <=> $other->uid);
     }
 
-    /**
-     * @return non-empty-string
-     */
-    final public function toString(): string
-    {
-        return $this->__toString();
-    }
-
-    /**
-     * @return non-empty-string
-     */
     public function __toString(): string
     {
         return $this->uid;
     }
 
-    /**
-     * @return non-empty-string
-     */
     public function jsonSerialize(): string
     {
         return $this->uid;

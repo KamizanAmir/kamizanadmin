@@ -3,7 +3,7 @@
     "description": "Simple MVC project with CRUD function",
     "type": "library",
     "require": {
-        "laravel/laravel": "12.x-dev"
+        "laravel/laravel": "10"
     },
     "license": "MIT",
     "autoload": {

@@ -34,18 +34,6 @@ interface ConnectionInterface
     public function selectOne($query, $bindings = [], $useReadPdo = true);
 
     /**
-     * Run a select statement and return the first column of the first row.
-     *
-     * @param  string  $query
-     * @param  array  $bindings
-     * @param  bool  $useReadPdo
-     * @return mixed
-     *
-     * @throws \Illuminate\Database\MultipleColumnsSelectedException
-     */
-    public function scalar($query, $bindings = [], $useReadPdo = true);
-
-    /**
      * Run a select statement against the database.
      *
      * @param  string  $query
@@ -131,12 +119,11 @@ interface ConnectionInterface
      *
      * @param  \Closure  $callback
      * @param  int  $attempts
-     * @param  Closure|null  $onFailure
      * @return mixed
      *
      * @throws \Throwable
      */
-    public function transaction(Closure $callback, $attempts = 1, ?Closure $onFailure = null);
+    public function transaction(Closure $callback, $attempts = 1);
 
     /**
      * Start a new database transaction.
