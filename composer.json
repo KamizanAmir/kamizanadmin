@@ -1,0 +1,20 @@
+{
+    "name": "kamizanamir/kamizanadmin",
+    "description": "Simple MVC project with CRUD function",
+    "type": "library",
+    "require": {
+        "laravel/laravel": "12.x-dev"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Kamizanamir\\Kamizanadmin\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Kamizan Amirudin"
+        }
+    ],
+    "minimum-stability": "dev"
+}
